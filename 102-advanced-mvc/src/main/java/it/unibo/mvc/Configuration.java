@@ -76,7 +76,7 @@ public final class Configuration {
         private int currentMin = DEFAULT_MIN;
         private int currentMax = DEFAULT_MAX;
         private int currentAttempts = DEFAULT_ATTEMPTS;
-        private boolean consumed = false;
+        private boolean consumed;
 
         /**
          * Default constructor. Produces a builder with the default configuration.

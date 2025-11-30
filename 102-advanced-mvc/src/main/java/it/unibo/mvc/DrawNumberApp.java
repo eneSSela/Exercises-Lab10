@@ -2,7 +2,7 @@ package it.unibo.mvc;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -10,31 +10,31 @@ import java.util.List;
  * Application entry point for DrawNumber game.
  */
 public final class DrawNumberApp implements DrawNumberViewObserver {
-    private static final int MIN = 0;
-    private static final int MAX = 100;
-    private static final int ATTEMPTS = 10;
-
     private final DrawNumber model;
     private final List<DrawNumberView> views;
 
+    private final Configuration config;
+
     /**
-     * Constructor.
-     *
-     * @param configFile
-     *            the configuration file path
-     * @param views
-     *            the views to attach
+     * Application entry point.
+     * 
+     * @param views the views showed.
      */
-    public DrawNumberApp(final DrawNumberView... views) {
+    public DrawNumberApp(final DrawNumberView... views) throws IOException {
         /*
          * Side-effect proof
          */
+        this.config = ConfigurationLoader.load("/config.yml");
         this.views = Arrays.asList(Arrays.copyOf(views, views.length));
         for (final DrawNumberView view: views) {
             view.setObserver(this);
             view.start();
         }
-        this.model = new DrawNumberImpl(MIN, MAX, ATTEMPTS);
+        this.model = new DrawNumberImpl(
+                config.getMin(), 
+                config.getMax(), 
+                config.getAttempts()
+        );
     }
 
     @Override
@@ -72,14 +72,15 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
     }
 
     /**
-     * Application entry point.
-     *
-     * @param args
-     *            ignored
-     * @throws FileNotFoundException if the configuration file cannot be fetched
+     * @param args ignored.
+     * 
+     * @throws IOException if configuration file cannot be read
      */
-    public static void main(final String... args) throws FileNotFoundException {
-        new DrawNumberApp(new DrawNumberViewImpl());
+    public static void main(final String... args) throws IOException {
+        final DrawNumberView guiView = new DrawNumberViewImpl();
+        final DrawNumberView consoleView = new PrintStreamView(System.out);
+        final DrawNumberView filView = new PrintStreamView("log.txt");
+        new DrawNumberApp(guiView, consoleView, filView);
     }
 
 }

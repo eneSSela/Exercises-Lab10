@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,7 +55,7 @@ public final class MusicGroupImpl implements MusicGroup {
         return (int) songs.stream()
                         .filter(song -> song.getAlbumName().isPresent()
                                         && song.getAlbumName().get().equals(albumName))
-                        .count();   
+                        .count();
     }
 
     @Override
@@ -73,11 +72,18 @@ public final class MusicGroupImpl implements MusicGroup {
                                         .filter(name -> name.equals(albumName))
                                         .isPresent())
                     .mapToDouble(Song::getDuration)
-                    .average();   
+                    .average();
     }
 
     @Override
     public Optional<String> longestSong() {
+        return songs.stream()
+                    .max(Comparator.comparingDouble(Song::getDuration))
+                    .map(Song::getSongName);
+    }
+
+    @Override
+    public Optional<String> longestAlbum() {
         return songs.stream()
                     .filter(song -> song.getAlbumName().isPresent())
                     .collect(Collectors.groupingBy(
@@ -86,11 +92,6 @@ public final class MusicGroupImpl implements MusicGroup {
                     .entrySet().stream()
                     .max(Comparator.comparingDouble(Map.Entry::getValue))
                     .flatMap(Map.Entry::getKey);
-    }
-
-    @Override
-    public Optional<String> longestAlbum() {
-        return Optional.empty();
     }
 
     private static final class Song {
